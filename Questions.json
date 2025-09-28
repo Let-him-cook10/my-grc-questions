@@ -1,0 +1,83 @@
+[
+    {
+        "Section": "AI Access & Integrations",
+        "Question": "Do you allow AI tools to access your email or cloud drives?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "No",
+        "Risk Weight": "3",
+        "Fix (If Not Good)": "Disable unnecessary integrations; grant least privilege."
+    },
+    {
+        "Section": "AI Data Handling",
+        "Question": "Do you paste or upload client/business confidential data into AI tools?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "No",
+        "Risk Weight": "3",
+        "Fix (If Not Good)": " Avoid uploading confidential/IP data"
+    },
+    {
+        "Section": "AI Privacy & Retention",
+        "Question": "Are you aware whether the AI tool stores your prompts/outputs and where?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "Yes",
+        "Risk Weight": "2",
+        "Fix (If Not Good)": " Check the providers retention policy"
+    },
+    {
+        "Section": "AI Outputs",
+        "Question": " Do you avoid entering passwords",
+        "Answer Options": " OTPs",
+        "Good Answer": " or API keys into AI tools? ",
+        "Risk Weight": "Yes;No;Not sure",
+        "Fix (If Not Good)": "Yes"
+    },
+    {
+        "Section": "Prompt Awareness",
+        "Question": " Do you check your prompts for sensitive PII (like Aadhaar",
+        "Answer Options": " PAN",
+        "Good Answer": " SSN) before hitting enter? ",
+        "Risk Weight": "Yes;No;Not sure",
+        "Fix (If Not Good)": "Yes"
+    },
+    {
+        "Section": "Business Confidentiality",
+        "Question": " Do you upload contracts",
+        "Answer Options": " financial reports",
+        "Good Answer": " or legal docs into public AI tools? ",
+        "Risk Weight": "Yes;No;Not sure",
+        "Fix (If Not Good)": "No"
+    },
+    {
+        "Section": "AI Integrations",
+        "Question": "Have you granted AI plugins or browser extensions “read all site data” access?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "No",
+        "Risk Weight": "2",
+        "Fix (If Not Good)": "Disable broad permissions; only allow access to the sites/tools required."
+    },
+    {
+        "Section": "Output Verification",
+        "Question": "Do you fact-check AI outputs before sending them to colleagues or clients?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "Yes",
+        "Risk Weight": "2",
+        "Fix (If Not Good)": "Verify with trusted sources; never forward outputs blindly in professional settings."
+    },
+    {
+        "Section": "Account Security",
+        "Question": "Do you reuse the same password for AI accounts and other online services?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "No",
+        "Risk Weight": "3",
+        "Fix (If Not Good)": "AI account logins in a password manager; enforce unique credentials."
+    },
+    {
+        "Section": "AI Privacy & Retention",
+        "Question": "Have you checked if the free AI app you use earns money by selling your data or prompts?",
+        "Answer Options": "Yes;No;Not sure",
+        "Good Answer": "Yes",
+        "Risk Weight": "2",
+        "Fix (If Not Good)": "Always read the privacy policy. Prefer trusted vendors with transparent data-handling policies"
+    },
+   
+]
