@@ -1,0 +1,101 @@
+// /api/score.js
+// Vercel serverless function (Node 18+). Keep minimal deps.
+
+export default async function handler(req, res) {
+  try {
+    // Only allow POST
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    // Basic CORS check - allow only your domains (comma separated env var)
+    const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+    const origin = req.headers.origin;
+    if (allowed.length && (!origin || !allowed.includes(origin))) {
+      return res.status(403).json({ error: 'Origin not allowed' });
+    }
+
+    // Small body size limit
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: 'Empty request' });
+    }
+
+    // Optionally verify reCAPTCHA token (if you choose to use it)
+    if (process.env.RECAPTCHA_SECRET) {
+      const token = req.body.recaptchaToken;
+      if (!token) return res.status(400).json({ error: 'Missing recaptcha token' });
+      const verify = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `secret=${encodeURIComponent(process.env.RECAPTCHA_SECRET)}&response=${encodeURIComponent(token)}`
+      });
+      const vj = await verify.json();
+      if (!vj.success || (vj.score !== undefined && vj.score < 0.3)) {
+        return res.status(403).json({ error: 'Recaptcha failed' });
+      }
+    }
+
+    // Expected payload: { answers: { "<id>": "Yes" | "No" | "Not sure", ... }, meta: { optional } }
+    const { answers } = req.body;
+    if (!answers || typeof answers !== 'object') return res.status(400).json({ error: 'Invalid payload' });
+
+    // Load private answer key from env var
+    if (!process.env.ANSWER_KEY_JSON) {
+      return res.status(500).json({ error: 'Scoring not available (server misconfigured)' });
+    }
+    const answerKey = JSON.parse(process.env.ANSWER_KEY_JSON);
+
+    // Compute scoring
+    let score = 0;
+    let maxPossible = 0;
+    const breakdown = [];
+
+    for (const qidStr of Object.keys(answerKey)) {
+      const key = answerKey[qidStr];
+      const w = Number(key.riskWeight || 1);
+      const good = (key.goodAnswer || '').toString().trim();
+      maxPossible += w * 2;
+
+      const userAns = (answers[qidStr] || '').toString().trim();
+      let points = 0;
+      if (!userAns || userAns.toLowerCase() === 'not sure') {
+        points = w; // Not sure = 1x weight
+      } else if (userAns === good) {
+        points = 0; // Good = 0
+      } else {
+        points = w * 2; // Bad = 2x weight
+      }
+
+      breakdown.push({
+        id: qidStr,
+        question: key.question || null,    // optional (only if you included question text here)
+        userAnswer: userAns || null,
+        points,
+        fix: key.fix || null
+      });
+
+      score += points;
+    }
+
+    // Determine risk level (configurable via env or dynamic by maxPossible)
+    const lowThresh = Number(process.env.LOW_THRESHOLD || Math.max(5, Math.floor(0.2 * maxPossible)));
+    const medThresh = Number(process.env.MED_THRESHOLD || Math.max(10, Math.floor(0.5 * maxPossible)));
+    let level = 'Low';
+    if (score > medThresh) level = 'High';
+    else if (score > lowThresh) level = 'Medium';
+
+    // Choose top 5 issues
+    const top = breakdown.sort((a,b)=>b.points-a.points).filter(x => x.points > 0).slice(0,5);
+
+    // Return minimal info:
+    return res.status(200).json({
+      score,
+      maxPossible,
+      level,
+      topFixes: top.map(t => ({ id: t.id, userAnswer: t.userAnswer, fix: t.fix, points: t.points })),
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (err) {
+    console.error('Scoring error', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
